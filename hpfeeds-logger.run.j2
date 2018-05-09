@@ -1,0 +1,34 @@
+#!/bin/bash
+
+trap "exit 130" SIGINT
+trap "exit 137" SIGKILL
+trap "exit 143" SIGTERM
+
+source {{ sysconfig_dir }}/hpfeeds-logger
+source {{ hpfeeds_logger_dir }}/hpfeeds-logger/hpfeeds-logger-env/bin/activate
+
+cd {{ hpfeeds_logger_dir }}
+if [[ ! -f ./hpfeeds-logger.cfg ]]
+then
+    IDENT='hpfeeds-logger'
+    SECRET=`python -c 'import uuid;print str(uuid.uuid4()).replace("-","")'`
+    CHANNELS='amun.events,conpot.events,thug.events,beeswarm.hive,dionaea.capture,dionaea.connections,thug.files,beeswarn.feeder,cuckoo.analysis,kippo.sessions,cowrie.sessions,glastopf.events,glastopf.files,mwbinary.dionaea.sensorunique,snort.alerts,wordpot.events,p0f.events,suricata.events,shockpot.events,elastichoney.events,rdphoney.events'
+
+    cp {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json.example {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
+    sed -i "s/\"host\": \"localhost\"/\"host\": \"${HPFEEDS_HOST}\"/g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
+    sed -i "s/\"port\": 10000/\"port\": ${HPFEEDS_PORT}/g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
+    sed -i "s/\"ident\": \"splunk-logger\"/\"ident\": \"${IDENT}\"/g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
+    sed -i "s/\"secret\": \"\"/\"secret\": \"${SECRET}\"/g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
+    sed -i "s/\"log_file\": \"mhn-splunk-log.out\"/\"log_file\": \"${LOG_FILE}\"/g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
+
+    # Generate config file for hpfeeds broker and register
+    cd {{ hpfeeds_dir }}/hpfeeds/broker/
+    python {{ hpfeeds_dir }}/hpfeeds/broker/generateconfig.py unattended --mongo_host ${MONGODB_HOST} --mongo_port ${MONGODB_PORT}
+    python {{ hpfeeds_dir }}/hpfeeds/broker/add_user.py "$IDENT" "$SECRET" "" "$CHANNELS"
+fi
+
+cd {{ hpfeeds_logger_dir}}/hpfeeds-logger/
+echo "Starting hpfeeds-logger..."
+
+export PYTHONPATH={{ hpfeeds_logger_dir }}/hpfeeds-logger
+exec python {{ hpfeeds_logger_dir }}/hpfeeds-logger/bin/hpfeeds-logger {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json

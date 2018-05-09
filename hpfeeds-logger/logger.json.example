@@ -1,0 +1,25 @@
+{
+    "host": "localhost",
+    "port": 10000,
+    "ident": "splunk-logger", 
+    "secret": "",
+    "channels": [
+        "amun.events",
+        "cowrie.sessions",
+        "dionaea.connections",
+        "dionaea.capture",
+        "glastopf.events",
+        "beeswarm.hive",
+        "kippo.sessions",
+        "conpot.events",
+        "snort.alerts",
+        "suricata.events",
+        "wordpot.events",
+        "shockpot.events",
+        "p0f.events",
+        "elastichoney.events",
+        "rdphoney.events"
+    ],
+    "log_file": "mhn-splunk-log.out",
+    "formatter_name": "splunk"
+}
