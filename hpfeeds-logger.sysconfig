@@ -10,4 +10,4 @@ HPFEEDS_PORT=10000
 MONGODB_HOST='mongodb'
 MONGODB_PORT=27017
 
-LOG_FILE="chn-splunk.log"
+LOG_FILE=/var/log/hpfeeds-logger/chn-splunk.log
