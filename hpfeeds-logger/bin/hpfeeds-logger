@@ -5,13 +5,14 @@ import hpfeeds
 import sys
 import logging
 from logging.handlers import RotatingFileHandler
-from hpfeedslogger.formatters import splunk, arcsight, json_formatter
+from hpfeedslogger.formatters import splunk, arcsight, json_formatter, raw_json
 from hpfeedslogger import processors
 
 FORMATTERS = {
     'splunk': splunk.format,
     'arcsight': arcsight.format,
     'json': json_formatter.format,
+    'raw_json': raw_json.format
 }
 
 handler = logging.StreamHandler()
@@ -28,13 +29,13 @@ def main():
     logger.info('Parsing config file: %s', sys.argv[1])
 
     config = json.load(file(sys.argv[1]))
-    host        = config['host']
-    port        = config['port']
+    host = config['host']
+    port = config['port']
     # hpfeeds protocol has trouble with unicode, hence the utf-8 encoding here
-    channels    = [c.encode('utf-8') for c in config['channels']]
-    ident       = config['ident'].encode('utf-8')
-    secret      = config['secret'].encode('utf-8')
-    logfile     = config['log_file']
+    channels = [c.encode('utf-8') for c in config['channels']]
+    ident = config['ident'].encode('utf-8')
+    secret = config['secret'].encode('utf-8')
+    logfile = config['log_file']
 
     processor = processors.HpfeedsMessageProcessor()
     formatter = FORMATTERS.get(config['formatter_name'])
@@ -59,8 +60,11 @@ def main():
     logger.info('connected to %s', hpc.brokername)
 
     def on_message(identifier, channel, payload):
-        for msg in processor.process(identifier, channel, payload, ignore_errors=True):
-            data_logger.info(formatter(msg))
+        if config['formatter_name'] == "raw_json":
+            data_logger.info(formatter(payload))
+        else:
+            for msg in processor.process(identifier, channel, payload, ignore_errors=True):
+                data_logger.info(formatter(msg))
 
     def on_error(payload):
         logger.error('Error message from server: %s', payload)
