@@ -1,7 +1,7 @@
 {
     "host": "localhost",
     "port": 10000,
-    "ident": "splunk-logger", 
+    "ident": "hpfeeds-logger",
     "secret": "",
     "channels": [
         "amun.events",

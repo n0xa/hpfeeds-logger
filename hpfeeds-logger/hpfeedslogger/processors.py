@@ -115,17 +115,14 @@ def glastopf_event(identifier, payload):
         traceback.print_exc()
         return None
 
-    if dec.pattern == 'unknown':
-        return None
-
     request_url = None
     try:
         # from mnemosyne...
-        if 'Host' in dec['request']['header'] and not dec['request']['url'].startswith('http'):
-            request_url = 'http://' + dec['request']['header']['Host'] + dec['request']['url']
+        if dec['http_host'] and not dec['http_host'].startswith('http'):
+            request_url = 'http://' + dec['http_host'] + dec['request_url']
         else:
             # best of luck!
-            request_url = dec['request']['url']
+            request_url = dec['http_host'] + dec['request_url']
     except:
         print 'exception processing glastopf url, ignoring'
         traceback.print_exc()
