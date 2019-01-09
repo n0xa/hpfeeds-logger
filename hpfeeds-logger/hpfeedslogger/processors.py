@@ -624,7 +624,7 @@ def uhp_events(identifier, payload):
         src_port=dec.src_port,
         dst_port=dec.dst_port,
         vendor_product='UHP',
-        app='uhp',
+        app=dec.app,
         direction='inbound',
         ids_type='network',
         severity='high',
