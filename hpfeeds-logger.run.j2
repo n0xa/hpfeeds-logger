@@ -20,7 +20,14 @@ then
     sed -i "s/\"ident\": \"splunk-logger\"/\"ident\": \"${IDENT}\"/g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
     sed -i "s/\"secret\": \"\"/\"secret\": \"${SECRET}\"/g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
     sed -i "s/\"formatter_name\": \"splunk\"/\"formatter_name\": \"${FORMATTER_NAME}\"/g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
+
+    sed -i "s|\"filelog_enabled\": true|\"filelog_enabled\": ${FILELOG_ENABLED:-false}|g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
     sed -i "s|\"log_file\": \"mhn-splunk-log.out\"|\"log_file\": \"${LOG_FILE}\"|g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
+
+    sed -i "s|\"syslog_enabled\": false|\"syslog_enabled\": ${SYSLOG_ENABLED:-false}|g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
+    sed -i "s|\"syslog_host\": \"localhost\"|\"syslog_host\": \"${SYSLOG_HOST}\"|g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
+    sed -i "s|\"syslog_port\": 514|\"syslog_port\": ${SYSLOG_PORT:-514}|g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
+    sed -i "s|\"syslog_facility\": \"user\"|\"syslog_facility\": \"${SYSLOG_FACILITY}\"|g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
 
     # Generate config file for hpfeeds broker and register
     cd {{ hpfeeds_dir }}/hpfeeds/broker/
