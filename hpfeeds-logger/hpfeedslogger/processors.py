@@ -630,7 +630,7 @@ def uhp_events(identifier, payload):
         severity='high',
         signature='Connection to Honeypot',
         action=dec.action,
-        message=dec.message
+        message=repr(dec.message)
     )
 
 
