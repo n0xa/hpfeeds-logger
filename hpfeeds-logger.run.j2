@@ -49,7 +49,7 @@ then
     OUR_TEXT=`echo ${CHANNELS} | sed -e 's/^/\\\"/' -e 's/$/\\\"/' -e 's/,/\\\",\\\"/g' | tr ',' '\n' | sed -e 's/$/,/' -e '$s/,$//' -e 's/^/\\t/'`
 
     # Please also forgive me for using perl
-    perl -p -000 -e "s/CHANNEL_VAR/${OUR_TEXT}/" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
+    perl -i -p -000 -e "s/CHANNEL_VAR/${OUR_TEXT}/" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
 
     IFS=${OLD_IFS}
 
