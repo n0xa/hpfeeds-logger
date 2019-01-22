@@ -18,8 +18,18 @@
         "shockpot.events",
         "p0f.events",
         "elastichoney.events",
-        "rdphoney.events"
+        "rdphoney.sessions",
+        "uhp.events"
     ],
-    "log_file": "mhn-splunk-log.out",
+    "filelog": {
+        "filelog_enabled": true,
+        "log_file": "mhn-splunk-log.out"
+    },
+    "syslog": {
+        "syslog_enabled": false,
+        "syslog_host": "localhost",
+        "syslog_port": 514,
+        "syslog_facility": "user"
+    },
     "formatter_name": "splunk"
 }
