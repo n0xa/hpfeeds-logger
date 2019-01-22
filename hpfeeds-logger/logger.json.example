@@ -4,22 +4,7 @@
     "ident": "hpfeeds-logger",
     "secret": "",
     "channels": [
-        "amun.events",
-        "cowrie.sessions",
-        "dionaea.connections",
-        "dionaea.capture",
-        "glastopf.events",
-        "beeswarm.hive",
-        "kippo.sessions",
-        "conpot.events",
-        "snort.alerts",
-        "suricata.events",
-        "wordpot.events",
-        "shockpot.events",
-        "p0f.events",
-        "elastichoney.events",
-        "rdphoney.sessions",
-        "uhp.events"
+CHANNEL_VAR
     ],
     "filelog": {
         "filelog_enabled": true,

@@ -27,6 +27,9 @@ then
     MONGODB_HOST=${MONGODB_HOST:-'mongodb'}
     MONGODB_PORT=${MONGODB_PORT:-27017}
 
+    # Please forgive me for this code
+    OUR_TEXT=`echo ${CHANNELS} | sed -e 's/^/\\\"/' -e 's/$/\\\"/' -e 's/,/\\\",\\\"/g' | tr ',' '\n' | sed -e 's/$/,/' -e '$s/,$//' -e 's/^/\\t/'`
+
     # copy the example logger.json.example file and edit in our variables
     cp {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json.example {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
     sed -i "s/\"host\": \"localhost\"/\"host\": \"${HPFEEDS_HOST}\"/g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
@@ -42,6 +45,9 @@ then
     sed -i "s|\"syslog_host\": \"localhost\"|\"syslog_host\": \"${SYSLOG_HOST}\"|g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
     sed -i "s|\"syslog_port\": 514|\"syslog_port\": ${SYSLOG_PORT}|g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
     sed -i "s|\"syslog_facility\": \"user\"|\"syslog_facility\": \"${SYSLOG_FACILITY}\"|g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
+
+    # Please also forgive me for using perl
+    perl -p -000 -e "s/CHANNEL_VAR/${OUR_TEXT}/" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
 
     # Generate config file for hpfeeds broker and register
     cd {{ hpfeeds_dir }}/hpfeeds/broker/
