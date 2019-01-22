@@ -10,6 +10,7 @@ source {{ hpfeeds_logger_dir }}/hpfeeds-logger/hpfeeds-logger-env/bin/activate
 cd {{ hpfeeds_logger_dir }}
 if [[ ! -f ./hpfeeds-logger.cfg ]]
 then
+
     # Check if we pulled in a value from the sysconfig file, and if not set a sane default
     HPFEEDS_HOST=${HPFEEDS_HOST:-'hpfeeds'}
     HPFEEDS_PORT=${HPFEEDS_PORT:-10000}
