@@ -1,4 +1,3 @@
-
 import json
 import traceback
 import urlparse
@@ -85,7 +84,7 @@ def geo_intel(maxmind_geo, maxmind_asn, ip, prefix=''):
 
 def create_message(event_type, identifier, src_ip, dst_ip,
                    src_port=None, dst_port=None, transport='tcp', protocol='ip', vendor_product=None,
-                   direction=None, ids_type=None, severity=None, signature=None, app=None, **kwargs):
+                   direction=None, ids_type=None, severity=None, signature=None, app=None, tags=[], **kwargs):
 
     msg = dict(kwargs)
     msg.update({
@@ -103,6 +102,7 @@ def create_message(event_type, identifier, src_ip, dst_ip,
         'severity': severity,
         'signature': signature,
         'app': app,
+        'tags': ",".join(tags)
     })
     return msg
 
@@ -130,6 +130,7 @@ def glastopf_event(identifier, payload):
     return create_message(
         'glastopf.events',
         identifier,
+        tags=dec.tags,
         src_ip=dec.source[0],
         src_port=dec.source[1],
         dst_ip=None,
@@ -151,9 +152,11 @@ def dionaea_capture(identifier, payload):
         print 'exception processing dionaea event'
         traceback.print_exc()
         return
+
     return create_message(
         'dionaea.capture',
         identifier,
+        tags=dec.tags,
         src_ip=dec.saddr,
         dst_ip=dec.daddr,
         src_port=dec.sport,
@@ -177,9 +180,11 @@ def dionaea_connections(identifier, payload):
         print 'exception processing dionaea connection'
         traceback.print_exc()
         return
+
     return create_message(
         'dionaea.connections',
         identifier,
+        tags=dec.tags,
         src_ip=dec.remote_host,
         dst_ip=dec.local_host,
         src_port=dec.remote_port,
@@ -239,6 +244,7 @@ def kippo_cowrie_sessions(identifier, payload, name, channel):
     base_message = create_message(
         channel,
         identifier,
+        tags=dec.tags,
         src_ip=dec.peerIP,
         dst_ip=dec.hostIP,
         src_port=dec.peerPort,
@@ -290,7 +296,11 @@ def conpot_events(identifier, payload):
     try:
         dec = ezdict(json.loads(str(payload)))
         remote = dec.remote[0]
-        port = dec.remote[1]
+        remote_port = dec.remote[1]
+        if dec.local[1]:
+            local_port = dec.local[1]
+        else:
+            local_port = 0
 
         # http asks locally for snmp with remote ip = "127.0.0.1"
         if remote == "127.0.0.1":
@@ -303,10 +313,11 @@ def conpot_events(identifier, payload):
     return create_message(
         'conpot.events-'+dec.data_type,
         identifier,
+        tags=dec.tags,
         src_ip=remote,
         dst_ip=dec.public_ip,
-        src_port=port,
-        dst_port=502,
+        src_port=remote_port,
+        dst_port=local_port,
         vendor_product='Conpot',
         app='conpot',
         direction='inbound',
@@ -430,9 +441,11 @@ def amun_events(identifier, payload):
         print 'exception processing amun event'
         traceback.print_exc()
         return
+
     return create_message(
         'amun.events',
         identifier,
+        tags=dec.tags,
         src_ip=dec.attackerIP,
         dst_ip=dec.victimIP,
         src_port=dec.attackerPort,
@@ -457,6 +470,7 @@ def wordpot_event(identifier, payload):
     return create_message(
         'wordpot.alerts',
         identifier,
+        tags=dec.tags,
         src_ip=dec.source_ip,
         dst_ip=dec.dest_ip,
         src_port=dec.source_port,
@@ -565,6 +579,61 @@ def elastichoney_events(identifier, payload):
         **kwargs
     )
 
+
+def rdphoney_sessions(identifier, payload):
+    try:
+        dec = ezdict(json.loads(str(payload)))
+    except:
+        print 'exception processing amun event'
+        traceback.print_exc()
+        return
+
+    return create_message(
+        'rdphoney.sessions',
+        identifier,
+        tags=dec.tags,
+        src_ip=dec.peerIP,
+        dst_ip=dec.hostIP,
+        src_port=dec.peerPort,
+        dst_port=dec.hostPort,
+        vendor_product='RDPHoney',
+        app='rdphoney',
+        direction='inbound',
+        ids_type='network',
+        severity='high',
+        signature='Connection to Honeypot',
+        username=dec.username,
+        data=dec.data
+    )
+
+
+def uhp_events(identifier, payload):
+    try:
+        dec = ezdict(json.loads(str(payload)))
+    except:
+        print 'exception processing amun event'
+        traceback.print_exc()
+        return
+
+    return create_message(
+        'uhp.events',
+        identifier,
+        tags=dec.tags,
+        src_ip=dec.src_ip,
+        dst_ip=dec.dst_ip,
+        src_port=dec.src_port,
+        dst_port=dec.dst_port,
+        vendor_product='UHP',
+        app=dec.app,
+        direction='inbound',
+        ids_type='network',
+        severity='high',
+        signature='Connection to Honeypot',
+        action=dec.action,
+        message=repr(dec.message)
+    )
+
+
 PROCESSORS = {
     'amun.events': [amun_events],
     'glastopf.events': [glastopf_event],
@@ -580,6 +649,8 @@ PROCESSORS = {
     'p0f.events': [p0f_events],
     'suricata.events': [suricata_events],
     'elastichoney.events': [elastichoney_events],
+    'rdphoney.sessions': [rdphoney_sessions],
+    'uhp.events': [uhp_events]
 }
 
 

@@ -10,6 +10,7 @@ source {{ hpfeeds_logger_dir }}/hpfeeds-logger/hpfeeds-logger-env/bin/activate
 cd {{ hpfeeds_logger_dir }}
 if [[ ! -f ./hpfeeds-logger.cfg ]]
 then
+
     # Check if we pulled in a value from the sysconfig file, and if not set a sane default
     HPFEEDS_HOST=${HPFEEDS_HOST:-'hpfeeds'}
     HPFEEDS_PORT=${HPFEEDS_PORT:-10000}
@@ -34,6 +35,7 @@ then
     sed -i "s/\"secret\": \"\"/\"secret\": \"${SECRET}\"/g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
     sed -i "s/\"formatter_name\": \"splunk\"/\"formatter_name\": \"${FORMATTER_NAME}\"/g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
 
+<<<<<<< HEAD
     sed -i "s|\"filelog_enabled\": true|\"filelog_enabled\": ${FILELOG_ENABLED}|g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
     sed -i "s|\"log_file\": \"mhn-splunk-log.out\"|\"log_file\": \"${LOG_FILE}\"|g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
 
