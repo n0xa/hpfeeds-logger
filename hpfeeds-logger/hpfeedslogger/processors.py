@@ -305,6 +305,13 @@ def kippo_cowrie_sessions(identifier, payload, name, channel):
             msg['command'] = command
             messages.append(msg)
 
+    if dec.hashes:
+        for fhash in dec.hashes:
+            msg = dict(base_message)
+            msg['signature'] = 'File downloaded on {} honeypot'.format(name_lower)
+            msg['hash'] = fhash
+            messages.append(msg)
+
     return messages
 
 
