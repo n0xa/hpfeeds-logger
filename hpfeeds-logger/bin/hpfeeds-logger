@@ -48,12 +48,22 @@ def main():
     try:
         if config['filelog'] and config['filelog']['filelog_enabled']:
             logfile = config['filelog']['log_file']
-            handler = RotatingFileHandler(logfile, maxBytes=100 * 1024 * 1024, backupCount=3)
+
+            if config['filelog']['rotation_strategy'] == 'size':
+                maxByt = int(['filelog']['rotation_size_max']) * 1024 * 1024
+                handler = RotatingFileHandler(logfile, maxBytes=maxByt, backupCount=3)
+            elif config['filelog']['rotation_strategy'] == 'time':
+                handler = TimedRotatingFileHandler(logfile, when='h', interval=int(['filelog']['rotation_time_max'], backupCount=3))
+            else:
+                logger.warning('Invalid rotation_strategy! Defaulting to 100 MB size rotation!')
+                handler = RotatingFileHandler(logfile, maxBytes=104857600,backupCount=3)
+
             handler.setFormatter(logging.Formatter('%(message)s'))
             data_logger.addHandler(handler)
             logger.info('Writing events to %s', logfile)
     except Exception as e:
         logger.error("Invalid file handler arguments")
+        return 1
 
     try:
         if config['syslog'] and config['syslog']['syslog_enabled']:
@@ -66,10 +76,11 @@ def main():
             logger.info('Writing syslog events to %s', syslog_host)
     except Exception as e:
         logger.error('Invalid sysconfig arguments')
+        return 1
 
     try:
         hpc = hpfeeds.new(host, port, ident, secret)
-    except hpfeeds.FeedException, e:
+    except hpfeeds.FeedException as e:
         logger.error('feed exception', e)
         return 1
 
@@ -89,7 +100,7 @@ def main():
     hpc.subscribe(channels)
     try:
         hpc.run(on_message, on_error)
-    except hpfeeds.FeedException, e:
+    except hpfeeds.FeedException as e:
         logger.error('feed exception:')
         logger.exception(e)
     except KeyboardInterrupt:
