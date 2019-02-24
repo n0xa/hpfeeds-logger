@@ -53,7 +53,7 @@ def main():
                 maxByt = int(config['filelog']['rotation_size_max']) * 1024 * 1024
                 handler = RotatingFileHandler(logfile, maxBytes=maxByt, backupCount=3)
             elif config['filelog']['rotation_strategy'] == 'time':
-                handler = TimedRotatingFileHandler(logfile, when='h', interval=int(config['filelog']['rotation_time_max'], backupCount=3))
+                handler = TimedRotatingFileHandler(logfile, when='h', interval=int(config['filelog']['rotation_time_max']), backupCount=3))
             else:
                 logger.warning('Invalid rotation_strategy! Defaulting to 100 MB size rotation!')
                 handler = RotatingFileHandler(logfile, maxBytes=104857600,backupCount=3)
