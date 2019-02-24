@@ -51,15 +51,15 @@ def main():
 
             if config['filelog']['rotation_strategy'] == 'size':
                 maxByt = int(config['filelog']['rotation_size_max']) * 1024 * 1024
-                handler = RotatingFileHandler(logfile, maxBytes=maxByt, backupCount=3)
+                file_handler = RotatingFileHandler(logfile, maxBytes=maxByt, backupCount=3)
             elif config['filelog']['rotation_strategy'] == 'time':
-                handler = TimedRotatingFileHandler(logfile, when='h', interval=int(config['filelog']['rotation_time_max']), backupCount=3))
+                file_handler = TimedRotatingFileHandler(logfile, when='h', interval=int(config['filelog']['rotation_time_max']), backupCount=3)
             else:
                 logger.warning('Invalid rotation_strategy! Defaulting to 100 MB size rotation!')
-                handler = RotatingFileHandler(logfile, maxBytes=104857600,backupCount=3)
+                file_handler = RotatingFileHandler(logfile, maxBytes=104857600,backupCount=3)
 
-            handler.setFormatter(logging.Formatter('%(message)s'))
-            data_logger.addHandler(handler)
+            file_handler.setFormatter(logging.Formatter('%(message)s'))
+            data_logger.addHandler(file_handler)
             logger.info('Writing events to %s', logfile)
     except Exception as e:
         logger.error("Invalid file handler arguments")
@@ -70,9 +70,9 @@ def main():
             syslog_host = config['syslog']['syslog_host'] or "localhost"
             syslog_port = config['syslog']['syslog_port'] or 514
             syslog_facility = config['syslog']['syslog_facility'] or "user"
-            handler = SysLogHandler(address=(syslog_host, syslog_port), facility=syslog_facility)
-            handler.setFormatter(logging.Formatter('%(message)s'))
-            data_logger.addHandler(handler)
+            file_handler = SysLogHandler(address=(syslog_host, syslog_port), facility=syslog_facility)
+            file_handler.setFormatter(logging.Formatter('%(message)s'))
+            data_logger.addHandler(file_handler)
             logger.info('Writing syslog events to %s', syslog_host)
     except Exception as e:
         logger.error('Invalid sysconfig arguments')
