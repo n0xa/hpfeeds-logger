@@ -4,7 +4,7 @@ import json
 import hpfeeds
 import sys
 import logging
-from logging.handlers import RotatingFileHandler, SysLogHandler
+from logging.handlers import RotatingFileHandler, SysLogHandler, TimedRotatingFileHandler
 from hpfeedslogger.formatters import splunk, arcsight, json_formatter, raw_json
 from hpfeedslogger import processors
 
