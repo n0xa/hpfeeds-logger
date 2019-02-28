@@ -144,7 +144,7 @@ def glastopf_event(identifier, payload):
         direction='inbound',
         ids_type='network',
         severity='high',
-        signature='Connection to Honeypot',
+        signature='Connection to glastopf honeypot',
         request_url=request_url,
     )
 
@@ -174,7 +174,7 @@ def dionaea_capture(identifier, payload):
         direction='inbound',
         ids_type='network',
         severity='high',
-        signature='Connection to Honeypot',
+        signature='File downloaded on dionaea Honeypot',
         url=dec.url,
         md5=dec.md5,
         sha512=dec.sha512,
@@ -206,7 +206,7 @@ def dionaea_connections(identifier, payload):
         direction='inbound',
         ids_type='network',
         severity='high',
-        signature='Connection to Honeypot',
+        signature='Connection to dionaea honeypot',
         dionaea_action=dec.connection_type,
     )
 
@@ -230,7 +230,7 @@ def beeswarm_hive(identifier, payload):
         direction='inbound',
         ids_type='network',
         severity='high',
-        signature='Connection to Honeypot',
+        signature='Connection to beeswarm honeypot',
     )
 
 
@@ -310,6 +310,7 @@ def kippo_cowrie_sessions(identifier, payload, name, channel):
             msg = dict(base_message)
             msg['signature'] = 'File downloaded on {} honeypot'.format(name_lower)
             msg['hash'] = fhash
+            msg['sha256'] = fhash
             messages.append(msg)
 
     return messages
@@ -350,7 +351,7 @@ def conpot_events(identifier, payload):
         direction='inbound',
         ids_type='network',
         severity='medium',
-        signature='Connection to Honeypot',
+        signature='Connection to conpot honeypot',
 
     )
 
@@ -486,7 +487,7 @@ def amun_events(identifier, payload):
         direction='inbound',
         ids_type='network',
         severity='high',
-        signature='Connection to Honeypot',
+        signature='Connection to amun honeypot',
     )
 
 
@@ -640,7 +641,7 @@ def rdphoney_sessions(identifier, payload):
         direction='inbound',
         ids_type='network',
         severity='high',
-        signature='Connection to Honeypot',
+        signature='Connection to rdphoney honeypot',
         username=dec.username,
         data=dec.data
     )
@@ -671,7 +672,7 @@ def uhp_events(identifier, payload):
         direction='inbound',
         ids_type='network',
         severity='high',
-        signature='Connection to Honeypot',
+        signature='Connection to uhp honeypot',
         action=dec.action,
         message=repr(dec.message)
     )
