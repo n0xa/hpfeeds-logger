@@ -4,7 +4,8 @@ import json
 import hpfeeds
 import sys
 import logging
-from logging.handlers import RotatingFileHandler, SysLogHandler, TimedRotatingFileHandler
+from logging.handlers import RotatingFileHandler, SysLogHandler, \
+    TimedRotatingFileHandler, WatchedFileHandler
 from hpfeedslogger.formatters import splunk, arcsight, json_formatter, raw_json
 from hpfeedslogger import processors
 
@@ -17,9 +18,10 @@ FORMATTERS = {
 LOG_FORMAT = '%(asctime)s - %(levelname)s - %(name)s[%(lineno)s][%(threadName)s] - %(message)s'
 handler = logging.StreamHandler()
 handler.setFormatter(logging.Formatter(LOG_FORMAT))
-logger = logging.getLogger('logger')
+logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 logger.addHandler(handler)
+
 
 def main():
     if len(sys.argv) < 2:
@@ -39,7 +41,8 @@ def main():
     processor = processors.HpfeedsMessageProcessor()
     formatter = FORMATTERS.get(config['formatter_name'])
     if not formatter:
-        logger.error('Unsupported data log formatter encountered: %s. Exiting.', config['formatter_name'])
+        logger.error('Unsupported data log formatter encountered: %s. Exiting.',
+                     config['formatter_name'])
         return 1
 
     data_logger = logging.getLogger('data')
@@ -50,19 +53,41 @@ def main():
             logfile = config['filelog']['log_file']
 
             if config['filelog']['rotation_strategy'] == 'size':
-                maxByt = int(config['filelog']['rotation_size_max']) * 1024 * 1024
-                file_handler = RotatingFileHandler(logfile, maxBytes=maxByt, backupCount=3)
+
+                maxByt = int(
+                    config['filelog']['rotation_size_max']) * 1024 * 1024
+                file_handler = RotatingFileHandler(logfile, maxBytes=maxByt,
+                                                   backupCount=3)
+
             elif config['filelog']['rotation_strategy'] == 'time':
-                file_handler = TimedRotatingFileHandler(logfile, when='h', interval=int(config['filelog']['rotation_time_max']), backupCount=3)
+                rotation_interval = int(config['filelog']['rotation_time_max'])
+                if config['filelog']['rotation_time_unit']:
+                    if config['filelog']['rotation_time_unit'].lower() in [
+                        'd','h','m']:
+                        rotation_unit = config['filelog']['rotation_time_unit'].lower()
+                    else:
+                        rotation_unit = 'h'
+                        logger.warning('Could not interpret '
+                                       'rotation_time_unit; defaulting to '
+                                       'hour (h)')
+
+                file_handler = TimedRotatingFileHandler(logfile, when=rotation_unit,
+                                                        interval=rotation_interval,
+                                                        backupCount=3)
+            elif config['filelog']['rotation_strategy'] == 'none':
+                file_handler = WatchedFileHandler(logfile, mode='a')
             else:
-                logger.warning('Invalid rotation_strategy! Defaulting to 100 MB size rotation!')
-                file_handler = RotatingFileHandler(logfile, maxBytes=104857600,backupCount=3)
+                logger.warning(
+                    'Invalid rotation_strategy! Defaulting to 100 MB size rotation!')
+                file_handler = RotatingFileHandler(logfile, maxBytes=104857600,
+                                                   backupCount=3)
 
             file_handler.setFormatter(logging.Formatter('%(message)s'))
             data_logger.addHandler(file_handler)
-            logger.info('Writing events to %s', logfile)
+            logger.info('Writing events to {0} using strategy {1}'.format(
+                logfile, config['filelog']['rotation_strategy']))
     except Exception as e:
-        logger.error("Invalid file handler arguments")
+        logger.error("Invalid file handler arguments: {0}".format(repr(e)))
         return 1
 
     try:
@@ -70,7 +95,8 @@ def main():
             syslog_host = config['syslog']['syslog_host'] or "localhost"
             syslog_port = config['syslog']['syslog_port'] or 514
             syslog_facility = config['syslog']['syslog_facility'] or "user"
-            file_handler = SysLogHandler(address=(syslog_host, syslog_port), facility=syslog_facility)
+            file_handler = SysLogHandler(address=(syslog_host, syslog_port),
+                                         facility=syslog_facility)
             file_handler.setFormatter(logging.Formatter('%(message)s'))
             data_logger.addHandler(file_handler)
             logger.info('Writing syslog events to %s', syslog_host)
@@ -90,7 +116,8 @@ def main():
         if config['formatter_name'] == "raw_json":
             data_logger.info(formatter(payload))
         else:
-            for msg in processor.process(identifier, channel, payload, ignore_errors=True):
+            for msg in processor.process(identifier, channel, payload,
+                                         ignore_errors=True):
                 data_logger.info(formatter(msg))
 
     def on_error(payload):
@@ -111,6 +138,7 @@ def main():
     finally:
         hpc.close()
     return 0
+
 
 if __name__ == '__main__':
     try:
