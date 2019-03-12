@@ -52,12 +52,17 @@ def main():
         if config['filelog'] and config['filelog']['filelog_enabled']:
             logfile = config['filelog']['log_file']
 
+            if config['filelog']['rotation_backups']:
+                backups = int(config['filelog']['rotation_backups'])
+            else:
+                backups = 3
+
             if config['filelog']['rotation_strategy'] == 'size':
 
                 maxByt = int(
                     config['filelog']['rotation_size_max']) * 1024 * 1024
                 file_handler = RotatingFileHandler(logfile, maxBytes=maxByt,
-                                                   backupCount=3)
+                                                   backupCount=backups)
 
             elif config['filelog']['rotation_strategy'] == 'time':
                 rotation_interval = int(config['filelog']['rotation_time_max'])
@@ -73,14 +78,14 @@ def main():
 
                 file_handler = TimedRotatingFileHandler(logfile, when=rotation_unit,
                                                         interval=rotation_interval,
-                                                        backupCount=3)
+                                                        backupCount=backups)
             elif config['filelog']['rotation_strategy'] == 'none':
                 file_handler = WatchedFileHandler(logfile, mode='a')
             else:
                 logger.warning(
                     'Invalid rotation_strategy! Defaulting to 100 MB size rotation!')
                 file_handler = RotatingFileHandler(logfile, maxBytes=104857600,
-                                                   backupCount=3)
+                                                   backupCount=backups)
 
             file_handler.setFormatter(logging.Formatter('%(message)s'))
             data_logger.addHandler(file_handler)
