@@ -45,7 +45,7 @@ then
     sed -i "s|\"rotation_size_max\": \"100\"|\"rotation_size_max\": \"${ROTATION_SIZE_MAX}\"|g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
     sed -i "s|\"rotation_time_max\": \"24\"|\"rotation_time_max\": \"${ROTATION_TIME_MAX}\"|g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
     sed -i "s|\"rotation_time_unit\": \"h\"|\"rotation_time_unit\": \"${ROTATION_TIME_UNIT}\"|g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
-    sed -i "s|\"rotation_backups\": \"h\"|\"rotation_backups\": \"${ROTATION_BACKUPS}\"|g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
+    sed -i "s|\"rotation_backups\": \"3\"|\"rotation_backups\": \"${ROTATION_BACKUPS}\"|g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
 
     sed -i "s|\"syslog_enabled\": false|\"syslog_enabled\": ${SYSLOG_ENABLED}|g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
     sed -i "s|\"syslog_host\": \"localhost\"|\"syslog_host\": \"${SYSLOG_HOST}\"|g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
