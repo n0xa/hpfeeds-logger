@@ -270,7 +270,7 @@ def kippo_cowrie_sessions(identifier, payload, name, channel):
         direction='inbound',
         ids_type='network',
         severity='high',
-        signature='SSH session on {} honeypot'.format(name_lower),
+        signature='Connection to {} honeypot'.format(name_lower),
         ssh_version=dec.version
     )
 
