@@ -1,8 +1,7 @@
-# This file is read from /etc/sysconfig/hpfeeds-logger
-# or /etc/default/hpfeeds-logger, depending on the distro version
+# This file is read from /etc/default/hpfeeds-logger
 #
-# Defaults here are for containers, but can be adjusted
-# after install for a regular server or to customize the containers
+# This can be modified to change the default setup of the unattended installation
+
 
 MONGODB_HOST="mongodb"
 MONGODB_PORT=27017
