@@ -271,7 +271,21 @@ def kippo_cowrie_sessions(identifier, payload, name, channel):
         ids_type='network',
         severity='high',
         signature='Connection to {} honeypot'.format(name_lower),
-        ssh_version=dec.version
+        loggedin=dec.loggedin,
+        ssh_version=dec.version,
+        protocol=dec.protocol,
+        arch=dec.arch,
+        client_heigth=dec.clientHeight,
+        client_width=dec.clientWidth,
+        fingerprint=dec.fingerprint,
+        kex_hassh=dec.kexHassh,
+        kex_hassh_algorithms=dec.kexHasshAlgorithms,
+        kex_kex_algorithms=dec.kexKexAlgorithms,
+        kex_key_algorithms=dec.kex_key_algorithms,
+        kex_enc_cs=dec.kexEncCS,
+        kex_mac_cs=dec.kexMacCS,
+        kex_comp_cs=dec.kexCompCS,
+        kex_lang_cs=dec.kexLangCS
     )
 
     messages.append(base_message)
