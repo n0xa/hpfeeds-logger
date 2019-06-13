@@ -47,7 +47,7 @@ then
     sed -i "s/\"host\": \"localhost\"/\"host\": \"${HPFEEDS_HOST}\"/g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
     sed -i "s/\"port\": 10000/\"port\": ${HPFEEDS_PORT}/g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
     sed -i "s/\"ident\": \"hpfeeds-logger\"/\"ident\": \"${IDENT}\"/g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
-    sed -i "s/\"secret\": \"\"/\"secret\": \"${SECRET}\"/g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
+    sed -i "s|\"secret\": \"\"|\"secret\": \"${SECRET//\|/\\\|}\"|g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
     sed -i "s/\"formatter_name\": \"splunk\"/\"formatter_name\": \"${FORMATTER_NAME}\"/g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
 
     sed -i "s|\"filelog_enabled\": true|\"filelog_enabled\": ${FILELOG_ENABLED}|g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
