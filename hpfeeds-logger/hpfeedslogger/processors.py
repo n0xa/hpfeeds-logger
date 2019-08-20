@@ -298,6 +298,15 @@ def kippo_cowrie_sessions(identifier, payload, name, channel):
             msg['ssh_password'] = password
             messages.append(msg)
 
+    if dec.loggedin:
+        username = dec.loggedin[0]
+        password = dec.loggedin[1]
+        msg = dict(base_message)
+        msg['signature'] = 'SSH login successful on {} honeypot'.format(name_lower)
+        msg['ssh_username'] = username
+        msg['ssh_password'] = password
+        messages.append(msg)
+
     if dec.urls:
         for url in dec.urls:
             msg = dict(base_message)
