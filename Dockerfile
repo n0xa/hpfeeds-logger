@@ -16,14 +16,11 @@ RUN apt-get update && apt install -y gcc git python3-dev python3-pip runit libge
 RUN pip3 install -r /opt/requirements.txt
 RUN pip3 install git+https://github.com/CommunityHoneyNetwork/hpfeeds3.git
 
-COPY hpfeeds-logger.sysconfig /etc/default/hpfeeds-logger
-
 RUN mkdir /var/log/hpfeeds-logger
 
 ADD . /opt/
+RUN chmod 755 /opt/entrypoint.sh
 
 ENV PYTHONPATH="/opt/hpfeeds-logger"
 
-CMD python3 /opt/scripts/build_config.py \
-    && ls -la /opt/scripts \
-    && python3 /opt/hpfeeds-logger/bin/hpfeeds-logger /opt/hpfeeds-logger/logger.json
+ENTRYPOINT ["/opt/entrypoint.sh"]

@@ -67,8 +67,7 @@ def main():
             elif config['filelog']['rotation_strategy'] == 'time':
                 rotation_interval = int(config['filelog']['rotation_time_max'])
                 if config['filelog']['rotation_time_unit']:
-                    if config['filelog']['rotation_time_unit'].lower() in [
-                        'd','h','m']:
+                    if config['filelog']['rotation_time_unit'].lower() in ['d', 'h', 'm']:
                         rotation_unit = config['filelog']['rotation_time_unit'].lower()
                     else:
                         rotation_unit = 'h'
