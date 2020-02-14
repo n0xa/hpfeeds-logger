@@ -30,13 +30,13 @@ def main():
 
     logger.info('Parsing config file: %s', sys.argv[1])
 
-    config = json.load(file(sys.argv[1]))
+    config = json.load(open(sys.argv[1], 'r'))
     host = config['host']
     port = config['port']
     # hpfeeds protocol has trouble with unicode, hence the utf-8 encoding here
     channels = [c.encode('utf-8') for c in config['channels']]
     ident = config['ident'].encode('utf-8')
-    secret = config['secret'].encode('utf-8')
+    secret = config['secret']
 
     processor = processors.HpfeedsMessageProcessor()
     formatter = FORMATTERS.get(config['formatter_name'])
@@ -67,8 +67,7 @@ def main():
             elif config['filelog']['rotation_strategy'] == 'time':
                 rotation_interval = int(config['filelog']['rotation_time_max'])
                 if config['filelog']['rotation_time_unit']:
-                    if config['filelog']['rotation_time_unit'].lower() in [
-                        'd','h','m']:
+                    if config['filelog']['rotation_time_unit'].lower() in ['d', 'h', 'm']:
                         rotation_unit = config['filelog']['rotation_time_unit'].lower()
                     else:
                         rotation_unit = 'h'
@@ -110,7 +109,8 @@ def main():
         return 1
 
     try:
-        hpc = hpfeeds.new(host, port, ident, secret)
+        hpc = hpfeeds.client.new(host, port, ident, secret)
+        logging.info(hpc)
     except hpfeeds.FeedException as e:
         logger.error('feed exception', e)
         return 1
@@ -121,7 +121,7 @@ def main():
         if config['formatter_name'] == "raw_json":
             data_logger.info(formatter(payload))
         else:
-            for msg in processor.process(identifier, channel, payload,
+            for msg in processor.process(identifier, channel, payload.decode('utf-8'),
                                          ignore_errors=True):
                 data_logger.info(formatter(msg))
 
