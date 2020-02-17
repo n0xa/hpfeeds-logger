@@ -18,7 +18,9 @@ def format(message):
     timestamp = datetime.datetime.isoformat(datetime.datetime.utcnow())
     if time.tzname[0] == 'UTC':
         timestamp += 'Z'
+    outmsg['timestamp'] = timestamp
 
-    msg = u', '.join(
-        [u'{}="{}"'.format(name, str(value).replace('"', '\\"')) for name, value in outmsg.items() if value])
-    return 'timestamp={}'.format(timestamp) + ', ' + msg
+    d = [u'{}="{}"'.format(name, str(value).replace('"', '\\"')) for name, value in outmsg.items() if value]
+    msg = ', '.join(d)
+
+    return msg
