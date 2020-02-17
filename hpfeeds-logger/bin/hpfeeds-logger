@@ -15,7 +15,7 @@ FORMATTERS = {
     'json': json_formatter.format,
     'raw_json': raw_json.format
 }
-LOG_FORMAT = '%(asctime)s - %(levelname)s - %(name)s[%(lineno)s][%(threadName)s] - %(message)s'
+LOG_FORMAT = '%(asctime)s - %(levelname)s - %(name)s[%(lineno)s][%(filename)s] - %(message)s'
 handler = logging.StreamHandler()
 handler.setFormatter(logging.Formatter(LOG_FORMAT))
 logger = logging.getLogger(__name__)
@@ -99,10 +99,10 @@ def main():
             syslog_host = config['syslog']['syslog_host'] or "localhost"
             syslog_port = config['syslog']['syslog_port'] or 514
             syslog_facility = config['syslog']['syslog_facility'] or "user"
-            file_handler = SysLogHandler(address=(syslog_host, syslog_port),
-                                         facility=syslog_facility)
-            file_handler.setFormatter(logging.Formatter('%(message)s'))
-            data_logger.addHandler(file_handler)
+            syslog_handler = SysLogHandler(address=(syslog_host, syslog_port),
+                                           facility=syslog_facility)
+            syslog_handler.setFormatter(logging.Formatter('%(message)s'))
+            data_logger.addHandler(syslog_handler)
             logger.info('Writing syslog events to %s', syslog_host)
     except Exception as e:
         logger.error('Invalid sysconfig arguments')
