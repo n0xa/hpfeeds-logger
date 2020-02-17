@@ -15,7 +15,7 @@ FORMATTERS = {
     'json': json_formatter.format,
     'raw_json': raw_json.format
 }
-LOG_FORMAT = '%(asctime)s - %(levelname)s - %(name)s[%(lineno)s][%(threadName)s] - %(message)s'
+LOG_FORMAT = '%(asctime)s - %(levelname)s - %(name)s[%(lineno)s][%(filename)s] - %(message)s'
 handler = logging.StreamHandler()
 handler.setFormatter(logging.Formatter(LOG_FORMAT))
 logger = logging.getLogger(__name__)
