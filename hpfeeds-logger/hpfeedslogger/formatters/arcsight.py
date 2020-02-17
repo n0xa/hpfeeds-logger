@@ -30,8 +30,8 @@ def format(message):
         timestamp += 'Z'
 
     # Set dynamic variables
-    outmsg = u"{} CEF:0|ThreatStream|MHN|1.0|{}|{}|{}|".format(timestamp, message['type'], message['signature'],
-                                                               severity)
+    outmsg = u"{} CEF:0|STINGAR|CHN|1.0|{}|{}|{}|".format(timestamp, message['type'], message['signature'],
+                                                          severity)
 
     # Replace transport field with protocol value if blank
     tmpmsg['transport'] = tmpmsg.get('transport', tmpmsg['protocol'])
