@@ -21,4 +21,4 @@ def format(message):
 
     msg = u', '.join(
         [u'{}="{}"'.format(name, str(value).replace('"', '\\"')) for name, value in outmsg.items() if value])
-    return timestamp + u' ' + msg
+    return 'timestamp={}'.format(timestamp) + u' ' + msg
