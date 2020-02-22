@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import datetime
+import time
 
 def format(message):
     tmpmsg = dict(message)
@@ -25,9 +26,12 @@ def format(message):
     }
     severity = severity_map.get(tmpmsg.get('severity'), "1")
     timestamp = datetime.datetime.isoformat(datetime.datetime.utcnow())
+    if time.tzname[0] == 'UTC':
+        timestamp += 'Z'
 
     # Set dynamic variables
-    outmsg = u"{} CEF:0|ThreatStream|MHN|1.0|{}|{}|{}|".format(timestamp, message['type'], message['signature'], severity)
+    outmsg = u"{} CEF:0|STINGAR|CHN|1.0|{}|{}|{}|".format(timestamp, message['type'], message['signature'],
+                                                          severity)
 
     # Replace transport field with protocol value if blank
     tmpmsg['transport'] = tmpmsg.get('transport', tmpmsg['protocol'])

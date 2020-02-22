@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import datetime
+import time
 
 def format(message):
 
@@ -15,5 +16,11 @@ def format(message):
         del outmsg['dest_ip']
 
     timestamp = datetime.datetime.isoformat(datetime.datetime.utcnow())
-    msg = u', '.join([u'{}="{}"'.format(name, str(value).replace('"', '\\"')) for name, value in outmsg.items() if value])
-    return timestamp + u' ' + msg
+    if time.tzname[0] == 'UTC':
+        timestamp += 'Z'
+    outmsg['timestamp'] = timestamp
+
+    d = [u'{}="{}"'.format(name, str(value).replace('"', '\\"')) for name, value in outmsg.items() if value]
+    msg = ', '.join(d)
+
+    return msg
