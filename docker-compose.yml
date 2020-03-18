@@ -1,0 +1,15 @@
+version: '3'
+services:
+  redis:
+    image: redis:alpine
+  mongodb:
+    image: mongo:3.4.24-xenial
+  hpfeeds-logger:
+    build:
+      context: .
+    image: hpfeeds-logger:latest
+    env_file:
+      - hpfeeds-logger.env
+    links:
+      - redis:redis
+      - mongodb:mongodb
