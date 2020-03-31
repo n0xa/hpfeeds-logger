@@ -183,10 +183,25 @@ def dionaea_capture(identifier, payload):
         direction='inbound',
         ids_type='network',
         severity='high',
-        signature='File downloaded on dionaea Honeypot',
+        signature=dec.event_type,
         url=dec.url,
         md5=dec.md5,
         sha512=dec.sha512,
+        action=dec.action,
+        status=dec.status,
+        username=dec.username,
+        password=dec.password,
+        smb_uuid=dec.smb_uuid,
+        smb_transfersyntax=dec.smb_transfersyntax,
+        smb_opnum=dec.smb_opnum,
+        cmd=dec.cmd,
+        virustotal=dec.virus_total,
+        mqtt_action=dec.mqtt_action,
+        mqtt_clientid=dec.mqtt_clientid,
+        mqtt_willtopic=dec.mqtt_willtopic,
+        mqtt_willmessage=dec.mqtt_willmessage,
+        mqtt_message=dec.mqtt_message,
+        sip_data=dec.sip_data
     )
 
 
