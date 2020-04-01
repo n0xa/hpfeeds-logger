@@ -3,9 +3,17 @@
 import datetime
 import time
 
-def format(message):
 
-    outmsg = dict(message)
+def format(message):
+    outmsg = dict()
+
+    timestamp = datetime.datetime.isoformat(datetime.datetime.utcnow())
+    if time.tzname[0] == 'UTC':
+        timestamp += 'Z'
+    outmsg['timestamp'] = timestamp
+
+    for k, v in dict(message).items():
+        outmsg[k] = v
 
     if 'src_ip' in outmsg:
         outmsg['src'] = outmsg['src_ip']
@@ -14,11 +22,6 @@ def format(message):
     if 'dest_ip' in outmsg:
         outmsg['dest'] = outmsg['dest_ip']
         del outmsg['dest_ip']
-
-    timestamp = datetime.datetime.isoformat(datetime.datetime.utcnow())
-    if time.tzname[0] == 'UTC':
-        timestamp += 'Z'
-    outmsg['timestamp'] = timestamp
 
     d = [u'{}="{}"'.format(name, str(value).replace('"', '\\"')) for name, value in outmsg.items() if value]
     msg = ', '.join(d)
