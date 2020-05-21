@@ -153,7 +153,7 @@ def glastopf_event(identifier, payload):
         direction='inbound',
         ids_type='network',
         severity='high',
-        signature='Connection to glastopf honeypot',
+        signature='Connection to honeypot',
         request_url=request_url,
     )
 
@@ -230,7 +230,7 @@ def dionaea_connections(identifier, payload):
         direction='inbound',
         ids_type='network',
         severity='high',
-        signature='Connection to dionaea honeypot',
+        signature='Connection to honeypot',
         dionaea_action=dec.connection_type,
     )
 
@@ -254,7 +254,7 @@ def beeswarm_hive(identifier, payload):
         direction='inbound',
         ids_type='network',
         severity='high',
-        signature='Connection to beeswarm honeypot',
+        signature='Connection to honeypot',
     )
 
 
@@ -294,7 +294,7 @@ def kippo_cowrie_sessions(identifier, payload, name, channel):
         direction='inbound',
         ids_type='network',
         severity='high',
-        signature='Connection to {} honeypot'.format(name_lower),
+        signature='Connection to honeypot',
         loggedin=dec.loggedin,
         ssh_version=dec.version,
         protocol=dec.protocol,
@@ -398,7 +398,7 @@ def conpot_events(identifier, payload):
         direction='inbound',
         ids_type='network',
         severity='medium',
-        signature='Connection to conpot honeypot',
+        signature='Connection to honeypot',
 
     )
 
@@ -534,7 +534,7 @@ def amun_events(identifier, payload):
         direction='inbound',
         ids_type='network',
         severity='high',
-        signature='Connection to amun honeypot',
+        signature='Connection to honeypot',
     )
 
 
@@ -688,7 +688,7 @@ def rdphoney_sessions(identifier, payload):
         direction='inbound',
         ids_type='network',
         severity='high',
-        signature='Connection to rdphoney honeypot',
+        signature='Connection to honeypot',
         username=dec.username,
         data=dec.data
     )
@@ -719,9 +719,43 @@ def uhp_events(identifier, payload):
         direction='inbound',
         ids_type='network',
         severity='high',
-        signature='Connection to uhp honeypot',
+        signature='Connection to honeypot',
         action=dec.action,
         message=repr(dec.message)
+    )
+
+
+def elasticpot_events(identifier, payload):
+    try:
+        dec = ezdict(json.loads(str(payload)))
+    except:
+        logger.warning('exception processing elasticpot event')
+        traceback.print_exc()
+        return
+
+    tags = []
+    if dec['tags']:
+        tags = dec['tags']
+
+    return create_message(
+        'elasticpot.events',
+        identifier,
+        tags=tags,
+        src_ip=dec.src_ip,
+        dst_ip=dec.dst_ip,
+        src_port=dec.src_port,
+        dst_port=dec.dst_port,
+        vendor_product='elasticpot',
+        app='elasticpot',
+        direction="inbound",
+        ids_type='network',
+        severity='high',
+        signature='Connection to honeypot',
+        eventid=dec.eventid,
+        message=dec.message,
+        url=dec.url,
+        request=dec.request,
+        user_agent=dec.user_agent
     )
 
 
@@ -741,7 +775,8 @@ PROCESSORS = {
     'suricata.events': [suricata_events],
     'elastichoney.events': [elastichoney_events],
     'rdphoney.sessions': [rdphoney_sessions],
-    'uhp.events': [uhp_events]
+    'uhp.events': [uhp_events],
+    'elasticpot.events': [elasticpot_events]
 }
 
 
