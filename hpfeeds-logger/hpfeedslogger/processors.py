@@ -759,6 +759,77 @@ def elasticpot_events(identifier, payload):
     )
 
 
+def spylex_events(identifier, payload):
+    try:
+        dec = ezdict(json.loads(str(payload)))
+    except:
+        logger.warning('exception processing spylex event')
+        traceback.print_exc()
+        return
+
+    tags = []
+    if dec['tags']:
+        tags = dec['tags']
+
+    return create_message(
+        'spylex.events',
+        identifier,
+        tags=tags,
+        src_ip=dec.src_ip,
+        dst_ip=dec.dst_ip,
+        src_port=dec.src_port,
+        dst_port=dec.dst_port,
+        vendor_product='silex',
+        app='spylex',
+        direction='inbound',
+        ids_type='network',
+        severity='high',
+        signature='Connection to honeypot',
+        eventid=dec.method,
+        path=dec.path,
+        full_path=dec.full_path,
+        args=dec.args,
+        form_data=dec.form_data,
+        headers=dec.headers,
+        files=dec.files
+    )
+
+
+def big_hp_events(identifier, payload):
+    try:
+        dec = ezdict(json.loads(str(payload)))
+    except:
+        logger.warning('exception processing spylex event')
+        traceback.print_exc()
+        return
+
+    tags = []
+    if dec['tags']:
+        tags = dec['tags']
+
+    return create_message(
+        'big-hp.events',
+        identifier,
+        tags=tags,
+        src_ip=dec.src_ip,
+        dst_ip=dec.dst_ip,
+        src_port=dec.src_port,
+        dst_port=dec.dst_port,
+        vendor_product='big-ip',
+        app='big-hp',
+        direction='inbound',
+        ids_type='network',
+        severity='high',
+        signature='Connection to honeypot',
+        eventid=dec.method,
+        path=dec.path,
+        full_path=dec.full_path,
+        args=dec.args,
+        form_data=dec.form_data,
+        headers=dec.headers
+    )
+
+
 PROCESSORS = {
     'amun.events': [amun_events],
     'glastopf.events': [glastopf_event],
@@ -776,7 +847,9 @@ PROCESSORS = {
     'elastichoney.events': [elastichoney_events],
     'rdphoney.sessions': [rdphoney_sessions],
     'uhp.events': [uhp_events],
-    'elasticpot.events': [elasticpot_events]
+    'elasticpot.events': [elasticpot_events],
+    'spylex.events': [spylex_events],
+    'big-hp.events': [big_hp_events]
 }
 
 
