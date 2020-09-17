@@ -4,7 +4,8 @@ import json
 import hpfeeds
 import sys
 import logging
-from logging.handlers import RotatingFileHandler, SysLogHandler
+from logging.handlers import RotatingFileHandler, SysLogHandler, \
+    TimedRotatingFileHandler, WatchedFileHandler
 from hpfeedslogger.formatters import splunk, arcsight, json_formatter, raw_json
 from hpfeedslogger import processors
 
@@ -14,12 +15,13 @@ FORMATTERS = {
     'json': json_formatter.format,
     'raw_json': raw_json.format
 }
-
+LOG_FORMAT = '%(asctime)s - %(levelname)s - %(name)s[%(lineno)s][%(filename)s] - %(message)s'
 handler = logging.StreamHandler()
-handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
-logger = logging.getLogger('logger')
+handler.setFormatter(logging.Formatter(LOG_FORMAT))
+logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 logger.addHandler(handler)
+
 
 def main():
     if len(sys.argv) < 2:
@@ -28,18 +30,19 @@ def main():
 
     logger.info('Parsing config file: %s', sys.argv[1])
 
-    config = json.load(file(sys.argv[1]))
+    config = json.load(open(sys.argv[1], 'r'))
     host = config['host']
     port = config['port']
     # hpfeeds protocol has trouble with unicode, hence the utf-8 encoding here
     channels = [c.encode('utf-8') for c in config['channels']]
     ident = config['ident'].encode('utf-8')
-    secret = config['secret'].encode('utf-8')
+    secret = config['secret']
 
     processor = processors.HpfeedsMessageProcessor()
     formatter = FORMATTERS.get(config['formatter_name'])
     if not formatter:
-        logger.error('Unsupported data log formatter encountered: %s. Exiting.', config['formatter_name'])
+        logger.error('Unsupported data log formatter encountered: %s. Exiting.',
+                     config['formatter_name'])
         return 1
 
     data_logger = logging.getLogger('data')
@@ -48,28 +51,67 @@ def main():
     try:
         if config['filelog'] and config['filelog']['filelog_enabled']:
             logfile = config['filelog']['log_file']
-            handler = RotatingFileHandler(logfile, maxBytes=100 * 1024 * 1024, backupCount=3)
-            handler.setFormatter(logging.Formatter('%(message)s'))
-            data_logger.addHandler(handler)
-            logger.info('Writing events to %s', logfile)
+
+            if config['filelog']['rotation_backups']:
+                backups = int(config['filelog']['rotation_backups'])
+            else:
+                backups = 3
+
+            if config['filelog']['rotation_strategy'] == 'size':
+
+                maxByt = int(
+                    config['filelog']['rotation_size_max']) * 1024 * 1024
+                file_handler = RotatingFileHandler(logfile, maxBytes=maxByt,
+                                                   backupCount=backups)
+
+            elif config['filelog']['rotation_strategy'] == 'time':
+                rotation_interval = int(config['filelog']['rotation_time_max'])
+                if config['filelog']['rotation_time_unit']:
+                    if config['filelog']['rotation_time_unit'].lower() in ['d', 'h', 'm']:
+                        rotation_unit = config['filelog']['rotation_time_unit'].lower()
+                    else:
+                        rotation_unit = 'h'
+                        logger.warning('Could not interpret '
+                                       'rotation_time_unit; defaulting to '
+                                       'hour (h)')
+
+                file_handler = TimedRotatingFileHandler(logfile, when=rotation_unit,
+                                                        interval=rotation_interval,
+                                                        backupCount=backups)
+            elif config['filelog']['rotation_strategy'] == 'none':
+                file_handler = WatchedFileHandler(logfile, mode='a')
+            else:
+                logger.warning(
+                    'Invalid rotation_strategy! Defaulting to 100 MB size rotation!')
+                file_handler = RotatingFileHandler(logfile, maxBytes=104857600,
+                                                   backupCount=backups)
+
+            file_handler.setFormatter(logging.Formatter('%(message)s'))
+            data_logger.addHandler(file_handler)
+            logger.info('Writing events to {0} using strategy {1}'.format(
+                logfile, config['filelog']['rotation_strategy']))
     except Exception as e:
-        logger.error("Invalid file handler arguments")
+        logger.error("Invalid file handler arguments: {0}".format(repr(e)))
+        return 1
 
     try:
         if config['syslog'] and config['syslog']['syslog_enabled']:
             syslog_host = config['syslog']['syslog_host'] or "localhost"
             syslog_port = config['syslog']['syslog_port'] or 514
             syslog_facility = config['syslog']['syslog_facility'] or "user"
-            handler = SysLogHandler(address=(syslog_host, syslog_port), facility=syslog_facility)
-            handler.setFormatter(logging.Formatter('%(message)s'))
-            data_logger.addHandler(handler)
+            syslog_handler = SysLogHandler(address=(syslog_host, syslog_port),
+                                           facility=syslog_facility)
+            syslog_handler.setFormatter(logging.Formatter('%(message)s'))
+            data_logger.addHandler(syslog_handler)
             logger.info('Writing syslog events to %s', syslog_host)
     except Exception as e:
         logger.error('Invalid sysconfig arguments')
+        return 1
 
     try:
-        hpc = hpfeeds.new(host, port, ident, secret)
-    except hpfeeds.FeedException, e:
+        hpc = hpfeeds.client.new(host, port, ident, secret)
+        logging.info(hpc)
+    except hpfeeds.FeedException as e:
         logger.error('feed exception', e)
         return 1
 
@@ -79,7 +121,8 @@ def main():
         if config['formatter_name'] == "raw_json":
             data_logger.info(formatter(payload))
         else:
-            for msg in processor.process(identifier, channel, payload, ignore_errors=True):
+            for msg in processor.process(identifier, channel, payload.decode('utf-8'),
+                                         ignore_errors=True):
                 data_logger.info(formatter(msg))
 
     def on_error(payload):
@@ -89,7 +132,7 @@ def main():
     hpc.subscribe(channels)
     try:
         hpc.run(on_message, on_error)
-    except hpfeeds.FeedException, e:
+    except hpfeeds.FeedException as e:
         logger.error('feed exception:')
         logger.exception(e)
     except KeyboardInterrupt:
@@ -100,6 +143,7 @@ def main():
     finally:
         hpc.close()
     return 0
+
 
 if __name__ == '__main__':
     try:

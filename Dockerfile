@@ -1,21 +1,27 @@
 FROM ubuntu:18.04
 
-LABEL maintainer Alexander Merck <alexander.t.merck@gmail.com>
-LABEL name "chn-hpfeeds-logger"
-LABEL version "0.1"
+LABEL maintainer Team STINGAR <team-stingar@duke.edu>
+LABEL name "hpfeeds-logger"
+LABEL version "1.9"
 LABEL release "1"
 LABEL summary "Community Honey Network hpfeeds logger"
-LABEL description "Small App for reading from MHN's hpfeeds broker and writing splunk logs"
+LABEL description "Small app for reading from CHN's hpfeeds3 broker and writing logs"
 LABEL authoritative-source-url "https://github.com/CommunityHoneyNetwork/hpfeeds-logger"
 LABEL changelog-url "https://github.com/CommunityHoneyNetwork/hpfeeds-logger/commits/master"
 
-ENV playbook "hpfeeds-logger.yml"
+ENV DEBIAN_FRONTEND "noninteractive"
 
-RUN apt-get update \
-    && apt-get install -y ansible
+RUN apt-get update && apt-get upgrade -y && apt-get install -y gcc git python3-dev python3-pip runit libgeoip-dev
 
-RUN echo "localhost ansible_connection=local" >> /etc/ansible/hosts
-ADD . /opt/
-RUN ansible-playbook /opt/${playbook}
+COPY hpfeeds-logger/requirements.txt /opt/requirements.txt
+RUN pip3 install -r /opt/requirements.txt
+RUN pip3 install git+https://github.com/CommunityHoneyNetwork/hpfeeds3.git
 
-ENTRYPOINT ["/usr/bin/runsvdir", "-P", "/etc/service"]
+RUN mkdir /var/log/hpfeeds-logger
+
+COPY . /opt/
+RUN chmod 755 /opt/entrypoint.sh
+
+ENV PYTHONPATH="/opt/hpfeeds-logger"
+
+ENTRYPOINT ["/opt/entrypoint.sh"]

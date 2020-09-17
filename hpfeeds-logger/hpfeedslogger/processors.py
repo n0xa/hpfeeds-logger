@@ -1,12 +1,21 @@
 import json
+import logging
 import traceback
-import urlparse
+from urllib.parse import urlparse
 import socket
 import hashlib
 import re
 import GeoIP
 
 IPV6_REGEX = re.compile(r'::ffff:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})')
+
+
+LOG_FORMAT = '%(asctime)s - %(levelname)s - %(name)s[%(lineno)s][%(threadName)s] - %(message)s'
+handler = logging.StreamHandler()
+handler.setFormatter(logging.Formatter(LOG_FORMAT))
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+logger.addHandler(handler)
 
 
 def computeHashes(data, record):
@@ -111,7 +120,7 @@ def glastopf_event(identifier, payload):
     try:
         dec = ezdict(json.loads(str(payload)))
     except:
-        print 'exception processing glastopf event'
+        logger.warning('exception processing glastopf event')
         traceback.print_exc()
         return None
 
@@ -124,7 +133,7 @@ def glastopf_event(identifier, payload):
             # best of luck!
             request_url = dec['http_host'] + dec['request_url']
     except:
-        print 'exception processing glastopf url, ignoring'
+        logger.warning('exception processing glastopf url, ignoring')
         traceback.print_exc()
 
     tags = []
@@ -144,7 +153,7 @@ def glastopf_event(identifier, payload):
         direction='inbound',
         ids_type='network',
         severity='high',
-        signature='Connection to Honeypot',
+        signature='Connection to honeypot',
         request_url=request_url,
     )
 
@@ -153,7 +162,7 @@ def dionaea_capture(identifier, payload):
     try:
         dec = ezdict(json.loads(str(payload)))
     except:
-        print 'exception processing dionaea event'
+        logger.warning('exception processing dionaea event')
         traceback.print_exc()
         return
 
@@ -174,10 +183,25 @@ def dionaea_capture(identifier, payload):
         direction='inbound',
         ids_type='network',
         severity='high',
-        signature='Connection to Honeypot',
+        signature=dec.event_type,
         url=dec.url,
         md5=dec.md5,
         sha512=dec.sha512,
+        action=dec.action,
+        status=dec.status,
+        username=dec.username,
+        password=dec.password,
+        smb_uuid=dec.smb_uuid,
+        smb_transfersyntax=dec.smb_transfersyntax,
+        smb_opnum=dec.smb_opnum,
+        cmd=dec.cmd,
+        virustotal=dec.virus_total,
+        mqtt_action=dec.mqtt_action,
+        mqtt_clientid=dec.mqtt_clientid,
+        mqtt_willtopic=dec.mqtt_willtopic,
+        mqtt_willmessage=dec.mqtt_willmessage,
+        mqtt_message=dec.mqtt_message,
+        sip_data=dec.sip_data
     )
 
 
@@ -185,7 +209,7 @@ def dionaea_connections(identifier, payload):
     try:
         dec = ezdict(json.loads(str(payload)))
     except:
-        print 'exception processing dionaea connection'
+        logger.warning('exception processing dionaea connection')
         traceback.print_exc()
         return
 
@@ -206,7 +230,7 @@ def dionaea_connections(identifier, payload):
         direction='inbound',
         ids_type='network',
         severity='high',
-        signature='Connection to Honeypot',
+        signature='Connection to honeypot',
         dionaea_action=dec.connection_type,
     )
 
@@ -215,7 +239,7 @@ def beeswarm_hive(identifier, payload):
     try:
         dec = ezdict(json.loads(str(payload)))
     except:
-        print 'exception processing beeswarm.hive event'
+        logger.warning('exception processing beeswarm.hive event')
         traceback.print_exc()
         return
     return create_message(
@@ -230,7 +254,7 @@ def beeswarm_hive(identifier, payload):
         direction='inbound',
         ids_type='network',
         severity='high',
-        signature='Connection to Honeypot',
+        signature='Connection to honeypot',
     )
 
 
@@ -247,7 +271,7 @@ def kippo_cowrie_sessions(identifier, payload, name, channel):
     try:
         dec = ezdict(json.loads(str(payload)))
     except:
-        print 'exception processing {} event'.format(name_lower)
+        logger.warning('exception processing %s event' % name_lower)
         traceback.print_exc()
         return
 
@@ -270,8 +294,22 @@ def kippo_cowrie_sessions(identifier, payload, name, channel):
         direction='inbound',
         ids_type='network',
         severity='high',
-        signature='SSH session on {} honeypot'.format(name_lower),
-        ssh_version=dec.version
+        signature='Connection to honeypot',
+        loggedin=dec.loggedin,
+        ssh_version=dec.version,
+        protocol=dec.protocol,
+        arch=dec.arch,
+        client_heigth=dec.clientHeight,
+        client_width=dec.clientWidth,
+        fingerprint=dec.fingerprint,
+        kex_hassh=dec.kexHassh,
+        kex_hassh_algorithms=dec.kexHasshAlgorithms,
+        kex_kex_algorithms=dec.kexKexAlgorithms,
+        kex_key_algorithms=dec.kex_key_algorithms,
+        kex_enc_cs=dec.kexEncCS,
+        kex_mac_cs=dec.kexMacCS,
+        kex_comp_cs=dec.kexCompCS,
+        kex_lang_cs=dec.kexLangCS
     )
 
     messages.append(base_message)
@@ -283,6 +321,15 @@ def kippo_cowrie_sessions(identifier, payload, name, channel):
             msg['ssh_username'] = username
             msg['ssh_password'] = password
             messages.append(msg)
+
+    if dec.loggedin:
+        username = dec.loggedin[0]
+        password = dec.loggedin[1]
+        msg = dict(base_message)
+        msg['signature'] = 'SSH login successful on {} honeypot'.format(name_lower)
+        msg['ssh_username'] = username
+        msg['ssh_password'] = password
+        messages.append(msg)
 
     if dec.urls:
         for url in dec.urls:
@@ -310,6 +357,7 @@ def kippo_cowrie_sessions(identifier, payload, name, channel):
             msg = dict(base_message)
             msg['signature'] = 'File downloaded on {} honeypot'.format(name_lower)
             msg['hash'] = fhash
+            msg['sha256'] = fhash
             messages.append(msg)
 
     return messages
@@ -329,7 +377,7 @@ def conpot_events(identifier, payload):
         if remote == "127.0.0.1":
             return
     except:
-        print 'exception processing conpot event'
+        logger.warning('exception processing conpot event')
         traceback.print_exc()
         return
 
@@ -350,7 +398,7 @@ def conpot_events(identifier, payload):
         direction='inbound',
         ids_type='network',
         severity='medium',
-        signature='Connection to Honeypot',
+        signature='Connection to honeypot',
 
     )
 
@@ -359,7 +407,7 @@ def snort_alerts(identifier, payload):
     try:
         dec = ezdict(json.loads(str(payload)))
     except:
-        print 'exception processing snort alert'
+        logger.warning('exception processing snort alert')
         traceback.print_exc()
         return None
 
@@ -399,7 +447,7 @@ def suricata_events(identifier, payload):
     try:
         dec = ezdict(json.loads(str(payload)))
     except:
-        print 'exception processing suricata event'
+        logger.warning('exception processing suricata event')
         traceback.print_exc()
         return None
 
@@ -438,7 +486,7 @@ def p0f_events(identifier, payload):
     try:
         dec = ezdict(json.loads(str(payload)))
     except:
-        print 'exception processing suricata event'
+        logger.warning('exception processing suricata event')
         traceback.print_exc()
         return None
     return create_message(
@@ -465,7 +513,7 @@ def amun_events(identifier, payload):
     try:
         dec = ezdict(json.loads(str(payload)))
     except:
-        print 'exception processing amun event'
+        logger.warning('exception processing amun event')
         traceback.print_exc()
         return
 
@@ -486,7 +534,7 @@ def amun_events(identifier, payload):
         direction='inbound',
         ids_type='network',
         severity='high',
-        signature='Connection to Honeypot',
+        signature='Connection to honeypot',
     )
 
 
@@ -494,7 +542,7 @@ def wordpot_event(identifier, payload):
     try:
         dec = ezdict(json.loads(str(payload)))
     except:
-        print 'exception processing wordpot alert'
+        logger.warning('exception processing wordpot alert')
         traceback.print_exc()
         return
 
@@ -524,7 +572,7 @@ def shockpot_event(identifier, payload):
     try:
         dec = ezdict(json.loads(str(payload)))
     except:
-        print 'exception processing shockpot alert'
+        logger.warning('exception processing shockpot alert')
         traceback.print_exc()
         return None
 
@@ -538,7 +586,7 @@ def shockpot_event(identifier, payload):
             kwargs.update(m.groupdict())
 
     try:
-        p = urlparse.urlparse(dec.url)
+        p = urlparse(dec.url)
         host = p.netloc.split(':')[0]
         socket.inet_aton(host)
         dest_ip = host
@@ -569,7 +617,7 @@ def elastichoney_events(identifier, payload):
     try:
         dec = ezdict(json.loads(str(payload)))
     except:
-        print 'exception processing elastichoney alert'
+        logger.warning('exception processing elastichoney alert')
         traceback.print_exc()
         return
 
@@ -619,7 +667,7 @@ def rdphoney_sessions(identifier, payload):
     try:
         dec = ezdict(json.loads(str(payload)))
     except:
-        print 'exception processing amun event'
+        logger.warning('exception processing amun event')
         traceback.print_exc()
         return
 
@@ -640,7 +688,7 @@ def rdphoney_sessions(identifier, payload):
         direction='inbound',
         ids_type='network',
         severity='high',
-        signature='Connection to Honeypot',
+        signature='Connection to honeypot',
         username=dec.username,
         data=dec.data
     )
@@ -650,7 +698,7 @@ def uhp_events(identifier, payload):
     try:
         dec = ezdict(json.loads(str(payload)))
     except:
-        print 'exception processing amun event'
+        logger.warning('exception processing amun event')
         traceback.print_exc()
         return
 
@@ -671,9 +719,114 @@ def uhp_events(identifier, payload):
         direction='inbound',
         ids_type='network',
         severity='high',
-        signature='Connection to Honeypot',
+        signature='Connection to honeypot',
         action=dec.action,
         message=repr(dec.message)
+    )
+
+
+def elasticpot_events(identifier, payload):
+    try:
+        dec = ezdict(json.loads(str(payload)))
+    except:
+        logger.warning('exception processing elasticpot event')
+        traceback.print_exc()
+        return
+
+    tags = []
+    if dec['tags']:
+        tags = dec['tags']
+
+    return create_message(
+        'elasticpot.events',
+        identifier,
+        tags=tags,
+        src_ip=dec.src_ip,
+        dst_ip=dec.dst_ip,
+        src_port=dec.src_port,
+        dst_port=dec.dst_port,
+        vendor_product='elasticpot',
+        app='elasticpot',
+        direction="inbound",
+        ids_type='network',
+        severity='high',
+        signature='Connection to honeypot',
+        eventid=dec.eventid,
+        message=dec.message,
+        url=dec.url,
+        request=dec.request,
+        user_agent=dec.user_agent
+    )
+
+
+def spylex_events(identifier, payload):
+    try:
+        dec = ezdict(json.loads(str(payload)))
+    except:
+        logger.warning('exception processing spylex event')
+        traceback.print_exc()
+        return
+
+    tags = []
+    if dec['tags']:
+        tags = dec['tags']
+
+    return create_message(
+        'spylex.events',
+        identifier,
+        tags=tags,
+        src_ip=dec.src_ip,
+        dst_ip=dec.dst_ip,
+        src_port=dec.src_port,
+        dst_port=dec.dst_port,
+        vendor_product='silex',
+        app='spylex',
+        direction='inbound',
+        ids_type='network',
+        severity='high',
+        signature='Connection to honeypot',
+        eventid=dec.method,
+        path=dec.path,
+        full_path=dec.full_path,
+        args=dec.args,
+        form_data=dec.form_data,
+        headers=dec.headers,
+        files=dec.files
+    )
+
+
+def big_hp_events(identifier, payload):
+    try:
+        dec = ezdict(json.loads(str(payload)))
+    except:
+        logger.warning('exception processing spylex event')
+        traceback.print_exc()
+        return
+
+    tags = []
+    if dec['tags']:
+        tags = dec['tags']
+
+    return create_message(
+        'big-hp.events',
+        identifier,
+        tags=tags,
+        src_ip=dec.src_ip,
+        dst_ip=dec.dst_ip,
+        src_port=dec.src_port,
+        dst_port=dec.dst_port,
+        vendor_product='big-ip',
+        app='big-hp',
+        direction='inbound',
+        ids_type='network',
+        severity='high',
+        signature='Connection to honeypot',
+        eventid=dec.method,
+        path=dec.path,
+        full_path=dec.full_path,
+        args=dec.args,
+        form_data=dec.form_data,
+        headers=dec.headers
     )
 
 
@@ -693,7 +846,10 @@ PROCESSORS = {
     'suricata.events': [suricata_events],
     'elastichoney.events': [elastichoney_events],
     'rdphoney.sessions': [rdphoney_sessions],
-    'uhp.events': [uhp_events]
+    'uhp.events': [uhp_events],
+    'elasticpot.events': [elasticpot_events],
+    'spylex.events': [spylex_events],
+    'big-hp.events': [big_hp_events]
 }
 
 
