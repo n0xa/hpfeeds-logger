@@ -20,7 +20,7 @@ RUN apt-get update \
 
 COPY hpfeeds-logger/requirements.txt /opt/requirements.txt
 # hadolint ignore=DL3013
-RUN pip3 install -r /opt/requirements.txt --no-install-recommends
+RUN pip3 install -r /opt/requirements.txt
 # hadolint ignore=DL3013
 RUN pip3 install git+https://github.com/CommunityHoneyNetwork/hpfeeds3.git
 
