@@ -10,12 +10,18 @@ LABEL authoritative-source-url "https://github.com/CommunityHoneyNetwork/hpfeeds
 LABEL changelog-url "https://github.com/CommunityHoneyNetwork/hpfeeds-logger/commits/master"
 
 ENV DEBIAN_FRONTEND "noninteractive"
-# hadolint ignore=DL3008,DL3005
 
-RUN apt-get update && apt-get upgrade -y && apt-get install -y gcc git python3-dev python3-pip runit libgeoip-dev
+# hadolint ignore=DL3008,DL3005
+RUN apt-get update \
+  && apt-get upgrade -y \
+  && apt-get install --no-install-recommends -y gcc git python3-dev python3-pip runit libgeoip-dev \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
 
 COPY hpfeeds-logger/requirements.txt /opt/requirements.txt
-RUN pip3 install -r /opt/requirements.txt
+# hadolint ignore=DL3013
+RUN pip3 install -r /opt/requirements.txt --no-install-recommends
+# hadolint ignore=DL3013
 RUN pip3 install git+https://github.com/CommunityHoneyNetwork/hpfeeds3.git
 
 RUN mkdir /var/log/hpfeeds-logger
