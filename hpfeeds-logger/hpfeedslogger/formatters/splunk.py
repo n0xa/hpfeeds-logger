@@ -13,7 +13,10 @@ def format(message):
     outmsg['timestamp'] = timestamp
 
     for k, v in dict(message).items():
-        outmsg[k] = v
+        if isinstance(v, bytes):
+            outmsg[k] = v.decode('utf8')
+        else:
+            outmsg[k] = v
 
     if 'src_ip' in outmsg:
         outmsg['src'] = outmsg['src_ip']

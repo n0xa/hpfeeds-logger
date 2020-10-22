@@ -13,5 +13,9 @@ def format(message):
     # This works on Python 3.6 and later as dictionaries keys are ordered by creation
     log['timestamp'] = msg.pop('timestamp')
     for item in msg:
-        log[item]=msg[item]
+        if isinstance(msg[item], bytes):
+            log[item] = msg[item].decode('utf8')
+        else:
+            log[item] = msg[item]
+
     return json.dumps(log)
