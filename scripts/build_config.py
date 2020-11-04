@@ -17,7 +17,7 @@ def main():
     HPFEEDS_PORT = os.environ.get("HPFEEDS_PORT", "10000")
     IDENT = os.environ.get("IDENT", "hpfeeds-logger")
     SECRET = os.environ.get("SECRET", "")
-    CHANNELS = os.environ.get("CHANNELS", "amun.events,conpot.events,thug.events,beeswarm.hive,dionaea.capture,dionaea.connections,thug.files,beeswarm.feeder,cuckoo.analysis,kippo.sessions,cowrie.sessions,glastopf.events,glastopf.files,mwbinary.dionaea.sensorunique,snort.alerts,wordpot.events,p0f.events,suricata.events,shockpot.events,elastichoney.events,rdphoney.sessions,uhp.events,elasticpot.events,spylex.events,big-hp.events")
+    CHANNELS = os.environ.get("CHANNELS", "amun.events,conpot.events,thug.events,beeswarm.hive,dionaea.capture,dionaea.connections,thug.files,beeswarm.feeder,cuckoo.analysis,kippo.sessions,cowrie.sessions,glastopf.events,glastopf.files,mwbinary.dionaea.sensorunique,snort.alerts,wordpot.events,p0f.events,suricata.events,shockpot.events,elastichoney.events,rdphoney.sessions,uhp.events,elasticpot.events,spylex.events,big-hp.events,ssh-auth-logger.events")
     FORMATTER_NAME = os.environ.get("FORMATTER_NAME", "splunk")
     FILELOG_ENABLED = os.environ.get("FILELOG_ENABLED", "false")
     LOG_FILE = os.environ.get("LOG_FILE", "/var/log/hpfeeds-logger/chn-splunk.log")
