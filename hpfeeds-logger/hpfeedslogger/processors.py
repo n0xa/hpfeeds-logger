@@ -301,9 +301,7 @@ def kippo_cowrie_sessions(identifier, payload, name, channel):
         arch=dec.arch,
         client_heigth=dec.height,
         client_width=dec.width,
-        key_fingerprint=dec.fingerprint,
-        key_content=dec.key,
-        key_type=dec.key_type,
+        authentication_keys=[],
         kex_hassh=dec.hassh,
         kex_hassh_algorithms=dec.hasshAlgorithms,
         kex_kex_algorithms=dec.kexAlgs,
@@ -315,6 +313,17 @@ def kippo_cowrie_sessions(identifier, payload, name, channel):
     )
 
     messages.append(base_message)
+
+    if dec.fingerprint:
+        msg = dict(base_message)
+        msg['signature'] = 'SSH login attempted on {} honeypot using public key'.format(name_lower)
+        auth = {
+            'key_fingerprint': dec.fingerprint,
+            'key_content': dec.key,
+            'key_type': dec.key_type
+        }
+        msg['authentication_keys'].append(auth)
+        messages.append(msg)
 
     if dec.credentials:
         for username, password in dec.credentials:
