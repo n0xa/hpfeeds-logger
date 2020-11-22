@@ -153,7 +153,7 @@ def glastopf_event(identifier, payload):
         direction='inbound',
         ids_type='network',
         severity='high',
-        signature='Connection to honeypot',
+        signature='Connection to Honeypot',
         request_url=request_url,
     )
 
@@ -230,7 +230,7 @@ def dionaea_connections(identifier, payload):
         direction='inbound',
         ids_type='network',
         severity='high',
-        signature='Connection to honeypot',
+        signature='Connection to Honeypot',
         dionaea_action=dec.connection_type,
     )
 
@@ -254,7 +254,7 @@ def beeswarm_hive(identifier, payload):
         direction='inbound',
         ids_type='network',
         severity='high',
-        signature='Connection to honeypot',
+        signature='Connection to Honeypot',
     )
 
 
@@ -294,7 +294,7 @@ def kippo_cowrie_sessions(identifier, payload, name, channel):
         direction='inbound',
         ids_type='network',
         severity='high',
-        signature='Connection to honeypot',
+        signature='Connection to Honeypot',
         loggedin=dec.loggedin,
         ssh_version=dec.version,
         protocol=dec.protocol,
@@ -409,7 +409,7 @@ def conpot_events(identifier, payload):
         direction='inbound',
         ids_type='network',
         severity='medium',
-        signature='Connection to honeypot',
+        signature='Connection to Honeypot',
 
     )
 
@@ -545,7 +545,7 @@ def amun_events(identifier, payload):
         direction='inbound',
         ids_type='network',
         severity='high',
-        signature='Connection to honeypot',
+        signature='Connection to Honeypot',
     )
 
 
@@ -699,7 +699,7 @@ def rdphoney_sessions(identifier, payload):
         direction='inbound',
         ids_type='network',
         severity='high',
-        signature='Connection to honeypot',
+        signature='Connection to Honeypot',
         username=dec.username,
         data=dec.data
     )
@@ -730,7 +730,7 @@ def uhp_events(identifier, payload):
         direction='inbound',
         ids_type='network',
         severity='high',
-        signature='Connection to honeypot',
+        signature='Connection to Honeypot',
         action=dec.action,
         message=repr(dec.message)
     )
@@ -761,7 +761,7 @@ def elasticpot_events(identifier, payload):
         direction="inbound",
         ids_type='network',
         severity='high',
-        signature='Connection to honeypot',
+        signature='Connection to Honeypot',
         eventid=dec.eventid,
         message=dec.message,
         url=dec.url,
@@ -795,7 +795,7 @@ def spylex_events(identifier, payload):
         direction='inbound',
         ids_type='network',
         severity='high',
-        signature='Connection to honeypot',
+        signature='Connection to Honeypot',
         eventid=dec.method,
         path=dec.path,
         full_path=dec.full_path,
@@ -831,7 +831,7 @@ def big_hp_events(identifier, payload):
         direction='inbound',
         ids_type='network',
         severity='high',
-        signature='Connection to honeypot',
+        signature='Connection to Honeypot',
         eventid=dec.method,
         path=dec.path,
         full_path=dec.full_path,
@@ -865,7 +865,7 @@ def ssh_auth_logger_events(identifier, payload):
         direction='inbound',
         ids_type='network',
         severity='high',
-        signature='Connection to honeypot',
+        signature='Connection to Honeypot',
         ssh_username=dec.duser
     )
 
@@ -877,6 +877,50 @@ def ssh_auth_logger_events(identifier, payload):
         base_message['ssh_password'] = dec.password
         base_message['signature'] = 'SSH login attempted on ssh-auth-logger honeypot with password'
 
+
+    return base_message
+
+def honeydb_agent_events(identifier, payload):
+    try:
+        dec = ezdict(json.loads(str(payload)))
+    except:
+        logger.warning('exception processing honeydb-agent event')
+        traceback.print_exc()
+        return
+
+    if dec.event == 'TX':
+        # Ignore server responses to attackers
+        logger.debug('Ignoring honeydb-agent response to attacker message')
+        return
+
+    tags = []
+    if dec['tags']:
+        tags = dec['tags']
+
+    base_message = create_message(
+        'honeydb-agent',
+        identifier,
+        tags=tags,
+        src_ip=dec.remote_host,
+        dst_ip=dec.local_host,
+        src_port=dec.remote_port,
+        dst_port=dec.local_port,
+        vendor_product='honeydb-agent',
+        app='honeydb-agent',
+        direction='inbound',
+        ids_type='network',
+        severity='high',
+        service=dec.service,
+        bytes=dec.bytes,
+        signature='Connection to Honeypot'
+    )
+
+    if dec.data:
+        try:
+            data = bytes.fromhex(dec.data).decode('utf8')
+        except Exception as e:
+            logger.warning('Failed to hex-decode data in honeydb-agent log: data: {} exceptiom: {}'.format(dec.data,e))
+        base_message['data'] = data
 
     return base_message
 
@@ -900,7 +944,8 @@ PROCESSORS = {
     'elasticpot.events': [elasticpot_events],
     'spylex.events': [spylex_events],
     'big-hp.events': [big_hp_events],
-    'ssh-auth-logger.events': [ssh_auth_logger_events]
+    'ssh-auth-logger.events': [ssh_auth_logger_events],
+    'honeydb-agent.events' : [honeydb_agent_events]
 }
 
 
