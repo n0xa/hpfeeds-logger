@@ -31,6 +31,7 @@ def main():
     ROTATION_SIZE_MAX = os.environ.get("ROTATION_SIZE_MAX", "100")
     ROTATION_TIME_MAX = os.environ.get("ROTATION_TIME_MAX", "24")
     ROTATION_TIME_UNIT = os.environ.get("ROTATION_TIME_UNIT", "h")
+    DEBUG = os.environ.get("DEBUG", "false")
 
     config_template = open("/opt/hpfeeds-logger/logger.json.example", 'r')
 
@@ -48,7 +49,7 @@ def main():
     config['ident'] = IDENT
     config['secret'] = secret
     config['channels'] = channels
-
+    config['debug'] = get_bool(DEBUG)
     config['formatter_name'] = FORMATTER_NAME
 
     # Configure filelog settings
