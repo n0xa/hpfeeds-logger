@@ -31,7 +31,7 @@ def main():
     logger.info('Parsing config file: %s', sys.argv[1])
 
     config = json.load(open(sys.argv[1], 'r'))
-    if config['debug'] == True:
+    if config['debug']:
         logger.setLevel(logging.DEBUG)
 
     host = config['host']
