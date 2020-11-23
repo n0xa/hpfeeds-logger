@@ -33,7 +33,10 @@ def main():
     config = json.load(open(sys.argv[1], 'r'))
     if config['debug']:
         logger.setLevel(logging.DEBUG)
-
+        logger.debug('Debug logging enabled')
+        logger.debug('Loaded config: {}'.format(config))
+    else:
+        logger.info('Logging defaulting to INFO')
     host = config['host']
     port = config['port']
     # hpfeeds protocol has trouble with unicode, hence the utf-8 encoding here
