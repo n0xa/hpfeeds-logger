@@ -912,6 +912,7 @@ def honeydb_agent_events(identifier, payload):
         severity='high',
         service=dec.service,
         bytes=dec.bytes,
+        hdb_event=dec.event,
         signature='Connection to Honeypot'
     )
 
