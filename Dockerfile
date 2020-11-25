@@ -1,13 +1,13 @@
 FROM ubuntu:18.04
 
-LABEL maintainer Team STINGAR <team-stingar@duke.edu>
-LABEL name "hpfeeds-logger"
-LABEL version "1.9"
-LABEL release "1"
-LABEL summary "Community Honey Network hpfeeds logger"
-LABEL description "Small app for reading from CHN's hpfeeds3 broker and writing logs"
-LABEL authoritative-source-url "https://github.com/CommunityHoneyNetwork/hpfeeds-logger"
-LABEL changelog-url "https://github.com/CommunityHoneyNetwork/hpfeeds-logger/commits/master"
+LABEL maintainer="Team Stingar <team-stingar@duke.edu>"
+LABEL name="hpfeeds-logger"
+LABEL version="1.9.1"
+LABEL release="1"
+LABEL summary="Community Honey Network hpfeeds logger"
+LABEL description="Small app for reading from CHN's hpfeeds3 broker and writing logs"
+LABEL authoritative-source-url="https://github.com/CommunityHoneyNetwork/hpfeeds-logger"
+LABEL changelog-url="https://github.com/CommunityHoneyNetwork/hpfeeds-logger/commits/master"
 
 ENV DEBIAN_FRONTEND "noninteractive"
 
