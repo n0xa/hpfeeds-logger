@@ -116,7 +116,7 @@ def main():
 
     try:
         hpc = hpfeeds.client.new(host, port, ident, secret)
-        logging.info(hpc)
+        logger.info(hpc)
     except hpfeeds.FeedException as e:
         logger.error('feed exception', e)
         return 1
