@@ -35,4 +35,11 @@ RUN chmod 755 /opt/entrypoint.sh
 
 ENV PYTHONPATH="/opt/hpfeeds-logger"
 
+# Drop root: this service only connects out to the hpfeeds broker and
+# writes logs/config under /opt and /var/log/hpfeeds-logger, none of
+# which need privileged access.
+RUN groupadd -r hpfeeds-logger && useradd -r -g hpfeeds-logger hpfeeds-logger \
+  && chown -R hpfeeds-logger:hpfeeds-logger /opt /var/log/hpfeeds-logger
+USER hpfeeds-logger
+
 ENTRYPOINT ["/opt/entrypoint.sh"]
